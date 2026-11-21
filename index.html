@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>工地 CAD 疊圖與局部裁切標註畫布</title>
   <style>
     :root {
@@ -28,6 +28,15 @@
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body, button, input, select, textarea, .chip-main-btn, .chip-del-btn, .tool-btn {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    canvas {
+      touch-action: none;
     }
 
     html, body {
@@ -3833,6 +3842,28 @@
         }
       });
       resizeObserver.observe(el.canvasStage);
+
+      /* =====================================================================
+         15. iOS SAFARI DOUBLE-TAP & PAGE PINCH-ZOOM GUARD
+         ===================================================================== */
+      // 阻止 iOS Safari 雙指縮放整個網頁（不影響畫布內的雙指縮放）
+      document.addEventListener('gesturestart', (e) => {
+        e.preventDefault();
+      }, { passive: false });
+
+      // 攔截 300ms 內在非互動區域的連續點擊，避免 Safari 觸發頁面雙擊放大；
+      // 略過 canvas、按鈕與輸入框，確保畫布雙擊改字、快速連按 -/+ 與輸入框聚焦皆不受影響
+      let lastNonInteractiveTouchEnd = 0;
+      document.addEventListener('touchend', (e) => {
+        if (e.target && e.target.closest('canvas, button, input, select, textarea')) {
+          return;
+        }
+        const now = Date.now();
+        if (now - lastNonInteractiveTouchEnd <= 300) {
+          e.preventDefault();
+        }
+        lastNonInteractiveTouchEnd = now;
+      }, { passive: false });
 
       window.onload = function () {
         const demoCad = createDemoCadCanvas();
