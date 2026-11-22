@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>工地 CAD 疊圖與局部裁切標註畫布 v2.0</title>
+  <title>工地 CAD 疊圖與局部裁切標註畫布 v2.1</title>
   <style>
     /* ==================== 1. Design Tokens & Base Reset ==================== */
     :root {
@@ -1072,7 +1072,7 @@
           <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <span>匯入 CAD</span>
         </button>
-        <span class="version-badge" title="程式版本">v2.0</span>
+        <span class="version-badge" title="程式版本">v2.1</span>
         <input id="cadFileInput" type="file" accept="image/*" class="hidden" />
         <input id="photoFileInput" type="file" accept="image/*" multiple class="hidden" />
       </div>
@@ -1307,7 +1307,7 @@
       'use strict';
 
       /* ==================== A. Constants & Default Phrases ==================== */
-      const APP_VERSION = 'v2.0';
+      const APP_VERSION = 'v2.1';
       const STORAGE_PHRASES_KEY = 'cad_overlay_phrases_v2';
       const STORAGE_PHRASE_VIEW_KEY = 'cad_overlay_phrase_view_v2';
 
@@ -3472,7 +3472,14 @@
       });
 
       /* ==================== O. Full-Resolution Export with Watermark ==================== */
-      el.btnExport.addEventListener('click', () => {
+      function isDesktopDevice() {
+        const ua = navigator.userAgent || '';
+        const isTouchMac = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+        const isMobileOrTablet = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || isTouchMac;
+        return !isMobileOrTablet;
+      }
+
+      function buildExportCanvas() {
         const out = document.createElement('canvas');
         out.width = state.cad.width;
         out.height = state.cad.height;
@@ -3521,19 +3528,92 @@
         g.fillText(dateLabel, bx + padX, by + (fontSize + padY * 2) / 2);
         g.restore();
 
-        out.toBlob((blob) => {
-          if (!blob) return;
-          state.exportBlob = blob;
-          const stamp = (state.exif.shootDate || formatToday()).replace(/\//g, '');
-          state.exportFilename = `CAD紀錄_${stamp}.png`;
-          if (el.exportPreviewImg.dataset.objUrl) {
-            URL.revokeObjectURL(el.exportPreviewImg.dataset.objUrl);
+        return out;
+      }
+
+      function buildExportFilename() {
+        const d = new Date();
+        const datePart = (state.exif.shootDate || formatToday()).replace(/\//g, '');
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        const ss = String(d.getSeconds()).padStart(2, '0');
+        return `CAD紀錄_${datePart}_${hh}${mm}${ss}.png`;
+      }
+
+      function canvasToBlobAsync(canvas, mimeType, quality) {
+        return new Promise((resolve) => {
+          canvas.toBlob((blob) => resolve(blob), mimeType, quality);
+        });
+      }
+
+      function triggerDirectDownload(blob, filename) {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+      }
+
+      el.btnExport.addEventListener('click', async () => {
+        const out = buildExportCanvas();
+        const suggestedName = buildExportFilename();
+
+        // Desktop: skip preview modal and open native Save As dialog directly
+        if (isDesktopDevice()) {
+          if (typeof window.showSaveFilePicker === 'function') {
+            try {
+              const fileHandle = await window.showSaveFilePicker({
+                suggestedName,
+                types: [
+                  {
+                    description: 'PNG 圖片',
+                    accept: { 'image/png': ['.png'] }
+                  },
+                  {
+                    description: 'JPEG 圖片',
+                    accept: { 'image/jpeg': ['.jpg', '.jpeg'] }
+                  }
+                ]
+              });
+              const chosenName = (fileHandle.name || suggestedName).toLowerCase();
+              const isJpeg = chosenName.endsWith('.jpg') || chosenName.endsWith('.jpeg');
+              const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
+              const blob = await canvasToBlobAsync(out, mimeType, isJpeg ? 0.92 : undefined);
+              if (!blob) return;
+              const writable = await fileHandle.createWritable();
+              await writable.write(blob);
+              await writable.close();
+              showToast('已儲存截圖至本機', 1400);
+              return;
+            } catch (err) {
+              if (err && err.name === 'AbortError') {
+                return;
+              }
+              // Fall back to standard download if Save File Picker is unavailable in current context
+            }
           }
-          const url = URL.createObjectURL(blob);
-          el.exportPreviewImg.src = url;
-          el.exportPreviewImg.dataset.objUrl = url;
-          el.exportModal.classList.remove('hidden');
-        }, 'image/png');
+
+          const blob = await canvasToBlobAsync(out, 'image/png');
+          if (!blob) return;
+          triggerDirectDownload(blob, suggestedName);
+          showToast('已開始下載截圖', 1400);
+          return;
+        }
+
+        // Mobile / Tablet: keep existing Export Preview Modal & Web Share flow unchanged
+        const blob = await canvasToBlobAsync(out, 'image/png');
+        if (!blob) return;
+        state.exportBlob = blob;
+        state.exportFilename = suggestedName;
+        if (el.exportPreviewImg.dataset.objUrl) {
+          URL.revokeObjectURL(el.exportPreviewImg.dataset.objUrl);
+        }
+        const url = URL.createObjectURL(blob);
+        el.exportPreviewImg.src = url;
+        el.exportPreviewImg.dataset.objUrl = url;
+        el.exportModal.classList.remove('hidden');
       });
 
       function closeExportModal() {
@@ -3558,13 +3638,7 @@
           }
         }
         // Fallback: direct PNG download
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(state.exportBlob);
-        a.download = state.exportFilename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+        triggerDirectDownload(state.exportBlob, state.exportFilename);
         showToast('已下載圖片檔案', 1400);
       });
 
