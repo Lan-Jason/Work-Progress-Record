@@ -896,7 +896,7 @@
     .text-input-row {
       display: flex;
       gap: 8px;
-      align-items: stretch;
+      align-items: flex-start;
     }
 
     .text-input {
@@ -908,6 +908,10 @@
       color: #ffffff;
       padding: 10px 12px;
       font-size: 15px;
+      line-height: 1.45;
+      resize: vertical;
+      min-height: 76px;
+      max-height: 180px;
       outline: none;
     }
 
@@ -1078,9 +1082,9 @@
       </div>
 
       <div class="status-strip">
-        <span id="cadFileName" class="cad-name">示範平面圖.cad</span>
+        <span id="cadFileName" class="cad-name">尚未匯入底圖</span>
         <span class="status-sep">|</span>
-        <span id="shootDateText" class="status-date">拍攝日: 示範圖</span>
+        <span id="shootDateText" class="status-date">拍攝日: —</span>
         <span id="gpsWarnPill" class="gps-warn-pill hidden" title="匯入的照片未偵測到 GPS 座標資訊">
           <span>⚠</span>
           <span class="lbl-full">無 GPS 訊號</span>
@@ -1160,9 +1164,9 @@
             <button class="tool-btn" data-tool="line">直線</button>
             <button class="tool-btn" data-tool="rect">矩形</button>
             <button class="tool-btn" data-tool="ellipse">圓形</button>
+            <button class="tool-btn" data-tool="cloud">雲朵</button>
             <button class="tool-btn" data-tool="freehand">手繪</button>
             <button class="tool-btn" data-tool="text">文字</button>
-            <button class="tool-btn" data-tool="eraser">橡皮擦</button>
           </div>
           <div class="style-row">
             <div class="swatch-group" id="swatchGroup">
@@ -1237,7 +1241,7 @@
       </div>
       <div class="modal-body">
         <div class="text-input-row">
-          <input id="textAnnInput" class="text-input" type="text" placeholder="輸入文字或點擊下方常用詞組合..." autocomplete="off" />
+          <textarea id="textAnnInput" class="text-input" rows="3" placeholder="輸入文字（按 Enter 可換行）或點擊下方常用詞組合..." autocomplete="off"></textarea>
           <button id="btnTextClear" class="btn-secondary">清除</button>
         </div>
 
@@ -1423,7 +1427,7 @@
           source: null,
           width: 1600,
           height: 1100,
-          name: '示範平面圖.cad'
+          name: '尚未匯入底圖'
         },
         exif: {
           shootDate: '',
@@ -1440,15 +1444,16 @@
         selectedAnnId: null,
         lastCreatedAnnId: null,
         draw: {
-          tool: 'select', // 'select'|'arrow'|'line'|'rect'|'ellipse'|'freehand'|'text'|'eraser'
+          tool: 'select', // 'select'|'arrow'|'line'|'rect'|'ellipse'|'cloud'|'freehand'|'text'
           color: '#ef4444',
           sizes: {
-            arrow: 5,
-            line: 5,
-            rect: 5,
-            ellipse: 5,
-            freehand: 5,
-            text: 28
+            arrow: 12,
+            line: 12,
+            rect: 12,
+            ellipse: 12,
+            cloud: 12,
+            freehand: 12,
+            text: 40
           }
         },
         history: [],
@@ -1530,116 +1535,6 @@
         let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
         t = clamp(t, 0, 1);
         return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
-      }
-
-      /* ==================== E. Demo Architectural CAD Generator ==================== */
-      function createDemoCadCanvas() {
-        const w = 1600;
-        const h = 1100;
-        const c = document.createElement('canvas');
-        c.width = w;
-        c.height = h;
-        const g = c.getContext('2d');
-
-        // Dark blueprint / crisp light CAD background
-        g.fillStyle = '#f8fafc';
-        g.fillRect(0, 0, w, h);
-
-        // Subtle engineering grid
-        g.strokeStyle = '#e2e8f0';
-        g.lineWidth = 1;
-        for (let x = 0; x <= w; x += 40) {
-          g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke();
-        }
-        for (let y = 0; y <= h; y += 40) {
-          g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke();
-        }
-
-        // Outer Frame
-        g.strokeStyle = '#0f172a';
-        g.lineWidth = 4;
-        g.strokeRect(40, 40, w - 80, h - 80);
-
-        // Building Outer Walls
-        g.lineWidth = 10;
-        g.strokeStyle = '#1e293b';
-        g.strokeRect(140, 140, 1260, 760);
-
-        // Interior Partitions
-        g.lineWidth = 6;
-        // Vertical partitions
-        g.beginPath();
-        g.moveTo(620, 140); g.lineTo(620, 560);
-        g.moveTo(1040, 140); g.lineTo(1040, 900);
-        g.moveTo(460, 560); g.lineTo(460, 900);
-        // Horizontal partitions
-        g.moveTo(140, 560); g.lineTo(1040, 560);
-        g.moveTo(1040, 480); g.lineTo(1400, 480);
-        g.stroke();
-
-        // Door Arcs
-        g.lineWidth = 2;
-        g.strokeStyle = '#475569';
-        const drawDoor = (x, y, r, startA, endA) => {
-          g.beginPath();
-          g.arc(x, y, r, startA, endA);
-          g.stroke();
-          g.beginPath();
-          g.moveTo(x, y);
-          g.lineTo(x + Math.cos(startA) * r, y + Math.sin(startA) * r);
-          g.stroke();
-        };
-        drawDoor(620, 520, 55, Math.PI, Math.PI * 1.5);
-        drawDoor(1040, 320, 55, 0, Math.PI * 0.5);
-        drawDoor(510, 560, 55, 0, Math.PI * 0.5);
-
-        // Structural Columns
-        g.fillStyle = '#334155';
-        const cols = [
-          [140, 140], [620, 140], [1040, 140], [1400, 140],
-          [140, 560], [620, 560], [1040, 560], [1400, 560],
-          [140, 900], [620, 900], [1040, 900], [1400, 900]
-        ];
-        cols.forEach(([cx, cy]) => g.fillRect(cx - 14, cy - 14, 28, 28));
-
-        // Room Labels
-        g.fillStyle = '#0f172a';
-        g.font = 'bold 28px sans-serif';
-        g.textAlign = 'center';
-        g.fillText('客廳 / 公共區域', 380, 350);
-        g.fillText('主臥室', 830, 350);
-        g.fillText('廚房 / 餐區', 1220, 310);
-        g.fillText('機電管道間', 300, 730);
-        g.fillText('次臥室', 750, 730);
-        g.fillText('浴廁 / 工作陽台', 1220, 700);
-
-        // Dimension Lines
-        g.strokeStyle = '#0284c7';
-        g.fillStyle = '#0284c7';
-        g.lineWidth = 2;
-        g.font = 'bold 20px monospace';
-        g.beginPath();
-        g.moveTo(140, 95); g.lineTo(1400, 95);
-        g.moveTo(140, 82); g.lineTo(140, 108);
-        g.moveTo(1400, 82); g.lineTo(1400, 108);
-        g.stroke();
-        g.fillText('12,600 mm', 770, 85);
-
-        // Title Block
-        g.fillStyle = '#f1f5f9';
-        g.fillRect(1080, 930, 460, 110);
-        g.strokeStyle = '#0f172a';
-        g.lineWidth = 2;
-        g.strokeRect(1080, 930, 460, 110);
-        g.fillStyle = '#0f172a';
-        g.textAlign = 'left';
-        g.font = 'bold 22px sans-serif';
-        g.fillText('工地平面配置示範圖 (CAD DEMO)', 1100, 972);
-        g.font = '16px sans-serif';
-        g.fillStyle = '#475569';
-        g.fillText('可點左上角「匯入 CAD」替換為實際工地平面圖', 1100, 1008);
-
-        return c;
       }
 
       /* ==================== F. Pure-JS JPEG EXIF Parser ==================== */
@@ -1742,7 +1637,7 @@
         el.cadFileName.textContent = state.cad.name;
         el.shootDateText.textContent = state.exif.shootDate
           ? `拍攝日: ${state.exif.shootDate}`
-          : '拍攝日: 示範圖';
+          : '拍攝日: —';
         el.gpsWarnPill.classList.toggle('hidden', !state.exif.missingGps);
       }
 
@@ -1884,13 +1779,69 @@
       function measureTextBox(g, ann) {
         g.save();
         g.font = `700 ${ann.size}px -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif`;
-        const metrics = g.measureText(ann.text || ' ');
+        const rawText = String(ann.text ?? '');
+        const lines = rawText.split(/\r?\n/);
+        if (lines.length === 0) lines.push(' ');
+        let maxLineW = 0;
+        for (const line of lines) {
+          const lw = g.measureText(line || ' ').width;
+          if (lw > maxLineW) maxLineW = lw;
+        }
         const padX = Math.max(8, ann.size * 0.32);
         const padY = Math.max(5, ann.size * 0.22);
-        const w = Math.max(24, metrics.width + padX * 2);
-        const h = ann.size * 1.25 + padY * 2;
+        const lineHeight = ann.size * 1.25;
+        const w = Math.max(24, maxLineW + padX * 2);
+        const h = lineHeight * lines.length + padY * 2;
         g.restore();
-        return { w, h, padX, padY };
+        return { w, h, padX, padY, lineHeight, lines };
+      }
+
+      function drawCloudRectPath(g, w, h, lineWidth) {
+        const hw = Math.max(2, w / 2);
+        const hh = Math.max(2, h / 2);
+        // Revision cloud bump chord length scales comfortably with stroke size & box dimensions
+        const targetChord = clamp(Math.max(22, lineWidth * 2.4), 16, Math.max(18, Math.min(w, h) * 0.55));
+        const nx = Math.max(2, Math.round(w / targetChord));
+        const ny = Math.max(2, Math.round(h / targetChord));
+
+        const pts = [];
+        // Top edge: left -> right
+        for (let i = 0; i < nx; i++) {
+          pts.push({ x: -hw + (i / nx) * w, y: -hh });
+        }
+        // Right edge: top -> bottom
+        for (let i = 0; i < ny; i++) {
+          pts.push({ x: hw, y: -hh + (i / ny) * h });
+        }
+        // Bottom edge: right -> left
+        for (let i = 0; i < nx; i++) {
+          pts.push({ x: hw - (i / nx) * w, y: hh });
+        }
+        // Left edge: bottom -> top
+        for (let i = 0; i < ny; i++) {
+          pts.push({ x: -hw, y: hh - (i / ny) * h });
+        }
+
+        g.beginPath();
+        g.moveTo(pts[0].x, pts[0].y);
+        for (let i = 0; i < pts.length; i++) {
+          const p1 = pts[i];
+          const p2 = pts[(i + 1) % pts.length];
+          const dx = p2.x - p1.x;
+          const dy = p2.y - p1.y;
+          const len = Math.hypot(dx, dy) || 1;
+          // Outward normal for clockwise perimeter in screen coords (y down) is (dy / len, -dx / len)
+          const nxOut = dy / len;
+          const nyOut = -dx / len;
+          const bulge = len * 0.58;
+          const c1x = p1.x + dx * 0.22 + nxOut * bulge;
+          const c1y = p1.y + dy * 0.22 + nyOut * bulge;
+          const c2x = p1.x + dx * 0.78 + nxOut * bulge;
+          const c2y = p1.y + dy * 0.78 + nyOut * bulge;
+          g.bezierCurveTo(c1x, c1y, c2x, c2y, p2.x, p2.y);
+        }
+        g.closePath();
+        g.stroke();
       }
 
       function drawAnnotation(g, ann) {
@@ -1916,6 +1867,10 @@
           g.translate(ann.cx, ann.cy);
           g.rotate(ann.rotation || 0);
           g.strokeRect(-ann.w / 2, -ann.h / 2, ann.w, ann.h);
+        } else if (ann.type === 'cloud') {
+          g.translate(ann.cx, ann.cy);
+          g.rotate(ann.rotation || 0);
+          drawCloudRectPath(g, ann.w, ann.h, ann.size);
         } else if (ann.type === 'ellipse') {
           g.translate(ann.cx, ann.cy);
           g.rotate(ann.rotation || 0);
@@ -1950,7 +1905,10 @@
           g.font = `700 ${ann.size}px -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif`;
           g.textBaseline = 'middle';
           g.textAlign = 'left';
-          g.fillText(ann.text, ann.x + box.padX, ann.y + box.h / 2);
+          for (let i = 0; i < box.lines.length; i++) {
+            const lineY = ann.y + box.padY + (i + 0.5) * box.lineHeight;
+            g.fillText(box.lines[i], ann.x + box.padX, lineY);
+          }
         }
         g.restore();
       }
@@ -2007,7 +1965,7 @@
         const invS = 1 / state.viewport.scale;
         const handleR = 8 * invS;
 
-        if (ann.type === 'rect' || ann.type === 'ellipse') {
+        if (ann.type === 'rect' || ann.type === 'ellipse' || ann.type === 'cloud') {
           drawTransformGizmo(g, ann.cx, ann.cy, ann.w, ann.h, ann.rotation || 0, state.viewport.scale);
           return;
         }
@@ -2159,15 +2117,16 @@
             if (distToSegment(wx, wy, ann.x1, ann.y1, ann.x2, ann.y2) <= tol + ann.size / 2) {
               return ann;
             }
-          } else if (ann.type === 'rect') {
+          } else if (ann.type === 'rect' || ann.type === 'cloud') {
             const local = rotatePoint(wx, wy, ann.cx, ann.cy, -(ann.rotation || 0));
             const lx = local.x - ann.cx;
             const ly = local.y - ann.cy;
             const hw = ann.w / 2;
             const hh = ann.h / 2;
-            const edgeTol = tol + ann.size / 2;
+            const bumpAllowance = ann.type === 'cloud' ? Math.max(14, ann.size * 1.4) : 0;
+            const edgeTol = tol + ann.size / 2 + bumpAllowance;
             const nearOuter = Math.abs(lx) <= hw + edgeTol && Math.abs(ly) <= hh + edgeTol;
-            const insideHole = Math.abs(lx) < Math.max(0, hw - edgeTol) && Math.abs(ly) < Math.max(0, hh - edgeTol);
+            const insideHole = Math.abs(lx) < Math.max(0, hw - (tol + ann.size / 2)) && Math.abs(ly) < Math.max(0, hh - (tol + ann.size / 2));
             if (nearOuter && !insideHole) return ann;
           } else if (ann.type === 'ellipse') {
             const local = rotatePoint(wx, wy, ann.cx, ann.cy, -(ann.rotation || 0));
@@ -2326,19 +2285,6 @@
         if (state.mode === 'draw') {
           const tool = state.draw.tool;
 
-          if (tool === 'eraser') {
-            const hit = hitTestAnnotation(world.x, world.y);
-            if (hit) {
-              state.annotations = state.annotations.filter(a => a.id !== hit.id);
-              if (state.selectedAnnId === hit.id) state.selectedAnnId = null;
-              pushHistory();
-              updateContextBars();
-              renderMainCanvas();
-            }
-            dragOp = { type: 'erase' };
-            return;
-          }
-
           if (tool === 'text') {
             openTextModal({ mode: 'create', worldX: world.x, worldY: world.y });
             return;
@@ -2360,8 +2306,8 @@
                 }
               }
 
-              // Check rotated gizmo for rect/ellipse
-              if (selAnn.type === 'rect' || selAnn.type === 'ellipse') {
+              // Check rotated gizmo for rect/ellipse/cloud
+              if (selAnn.type === 'rect' || selAnn.type === 'ellipse' || selAnn.type === 'cloud') {
                 const handle = getGizmoHandleHit(world.x, world.y, selAnn.cx, selAnn.cy, selAnn.w, selAnn.h, selAnn.rotation);
                 if (handle === 'rot') {
                   dragOp = {
@@ -2420,8 +2366,8 @@
             return;
           }
 
-          // Drawing new vector shape (arrow, line, rect, ellipse, freehand)
-          const size = state.draw.sizes[tool] || 5;
+          // Drawing new vector shape (arrow, line, rect, ellipse, cloud, freehand)
+          const size = state.draw.sizes[tool] || 12;
           if (tool === 'line' || tool === 'arrow') {
             activeDraftAnn = {
               id: genId('ann'),
@@ -2433,7 +2379,7 @@
               color: state.draw.color,
               size
             };
-          } else if (tool === 'rect' || tool === 'ellipse') {
+          } else if (tool === 'rect' || tool === 'ellipse' || tool === 'cloud') {
             activeDraftAnn = {
               id: genId('ann'),
               type: tool,
@@ -2538,7 +2484,7 @@
           if (ann.type === 'line' || ann.type === 'arrow') {
             ann.x1 = orig.x1 + dx; ann.y1 = orig.y1 + dy;
             ann.x2 = orig.x2 + dx; ann.y2 = orig.y2 + dy;
-          } else if (ann.type === 'rect' || ann.type === 'ellipse') {
+          } else if (ann.type === 'rect' || ann.type === 'ellipse' || ann.type === 'cloud') {
             ann.cx = orig.cx + dx; ann.cy = orig.cy + dy;
           } else if (ann.type === 'text') {
             ann.x = orig.x + dx; ann.y = orig.y + dy;
@@ -2563,7 +2509,7 @@
           dragOp.changed = true;
           renderMainCanvas();
         } else if (dragOp.type === 'ann-resize') {
-          // Free aspect ratio resize for rect/ellipse with locked opposite corner in rotated frame
+          // Free aspect ratio resize for rect/ellipse/cloud with locked opposite corner in rotated frame
           const ann = dragOp.ann;
           const rot = ann.rotation || 0;
           const cos = Math.cos(-rot);
@@ -2589,20 +2535,11 @@
           ann.cy = dragOp.fixedWorld.y + cxL * sinF + cyL * cosF;
           dragOp.changed = true;
           renderMainCanvas();
-        } else if (dragOp.type === 'erase') {
-          const hit = hitTestAnnotation(world.x, world.y);
-          if (hit) {
-            state.annotations = state.annotations.filter(a => a.id !== hit.id);
-            if (state.selectedAnnId === hit.id) state.selectedAnnId = null;
-            pushHistory();
-            updateContextBars();
-            renderMainCanvas();
-          }
         } else if (dragOp.type === 'draw-new' && activeDraftAnn) {
           if (activeDraftAnn.type === 'line' || activeDraftAnn.type === 'arrow') {
             activeDraftAnn.x2 = world.x;
             activeDraftAnn.y2 = world.y;
-          } else if (activeDraftAnn.type === 'rect' || activeDraftAnn.type === 'ellipse') {
+          } else if (activeDraftAnn.type === 'rect' || activeDraftAnn.type === 'ellipse' || activeDraftAnn.type === 'cloud') {
             const x1 = dragOp.startWorld.x;
             const y1 = dragOp.startWorld.y;
             activeDraftAnn.cx = (x1 + world.x) / 2;
@@ -2635,7 +2572,7 @@
             let valid = true;
             if (activeDraftAnn.type === 'line' || activeDraftAnn.type === 'arrow') {
               valid = Math.hypot(activeDraftAnn.x2 - activeDraftAnn.x1, activeDraftAnn.y2 - activeDraftAnn.y1) > 4;
-            } else if (activeDraftAnn.type === 'rect' || activeDraftAnn.type === 'ellipse') {
+            } else if (activeDraftAnn.type === 'rect' || activeDraftAnn.type === 'ellipse' || activeDraftAnn.type === 'cloud') {
               valid = activeDraftAnn.w > 6 && activeDraftAnn.h > 6;
             } else if (activeDraftAnn.type === 'freehand') {
               valid = activeDraftAnn.points.length > 1;
@@ -2693,9 +2630,9 @@
           line: '繪製直線',
           rect: '繪製矩形',
           ellipse: '繪製圓形',
+          cloud: '繪製雲朵框',
           freehand: '手繪標記',
-          text: '點擊畫布新增文字',
-          eraser: '點擊或滑過移除標註'
+          text: '點擊畫布新增文字'
         };
         if (state.mode === 'view') {
           el.modeBadge.textContent = '底圖檢視：拖曳平移、滾輪或雙指縮放';
@@ -2770,7 +2707,7 @@
       function adjustSize(delta) {
         const targetAnn = getTargetAnnForStyle();
         let activeType = state.draw.tool;
-        if (activeType === 'select' || activeType === 'eraser') {
+        if (activeType === 'select') {
           activeType = targetAnn ? targetAnn.type : 'arrow';
         }
 
@@ -2778,7 +2715,7 @@
         const step = isText ? 4 : 1;
         const minVal = isText ? 14 : 2;
         const maxVal = isText ? 96 : 24;
-        const current = state.draw.sizes[activeType] ?? (isText ? 28 : 5);
+        const current = state.draw.sizes[activeType] ?? (isText ? 40 : 12);
         const nextVal = clamp(current + delta * step, minVal, maxVal);
         state.draw.sizes[activeType] = nextVal;
 
@@ -2844,7 +2781,7 @@
         if (clone.type === 'line' || clone.type === 'arrow') {
           clone.x1 += shift; clone.y1 += shift;
           clone.x2 += shift; clone.y2 += shift;
-        } else if (clone.type === 'rect' || clone.type === 'ellipse') {
+        } else if (clone.type === 'rect' || clone.type === 'ellipse' || clone.type === 'cloud') {
           clone.cx += shift; clone.cy += shift;
         } else if (clone.type === 'text') {
           clone.x += shift; clone.y += shift;
@@ -3446,7 +3383,7 @@
       el.btnTextCancel.addEventListener('click', closeTextModal);
 
       el.btnTextConfirm.addEventListener('click', () => {
-        const val = el.textAnnInput.value.trim();
+        const val = el.textAnnInput.value.replace(/^\s+|\s+$/g, '');
         if (!val || !textDialogContext) {
           closeTextModal();
           return;
@@ -3461,7 +3398,7 @@
             y: textDialogContext.worldY,
             text: val,
             color: state.draw.color,
-            size: state.draw.sizes.text || 28
+            size: state.draw.sizes.text || 40
           };
           state.annotations.push(ann);
           state.lastCreatedAnnId = ann.id;
@@ -3744,9 +3681,6 @@
         }
         initialized = true;
         loadPhrases();
-        state.cad.source = createDemoCadCanvas();
-        state.cad.width = state.cad.source.width;
-        state.cad.height = state.cad.source.height;
         pushHistory();
         syncOrientationLayout();
         fitCadToScreen();
