@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>工地 CAD 疊圖與局部裁切標註畫布 v2.4</title>
+  <title>工地 CAD 疊圖與局部裁切標註畫布 v2.6</title>
   <style>
     /* ==================== 1. Design Tokens & Base Reset ==================== */
     :root {
@@ -284,38 +284,49 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
+      padding: 5px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(51, 65, 85, 0.85);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.42);
     }
 
     .zoom-btn {
-      width: 38px;
-      height: 34px;
+      width: 44px;
+      height: 40px;
       border-radius: 10px;
-      background: rgba(17, 24, 39, 0.86);
-      border: 1px solid #334155;
+      background: #1e293b;
+      border: 1px solid #475569;
       color: #f8fafc;
-      font-size: 18px;
-      font-weight: 600;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .zoom-btn:hover:not(:disabled) {
+      background: #283548;
+      border-color: var(--accent);
     }
 
     .zoom-fit-btn {
-      width: 38px;
-      height: 30px;
-      font-size: 10px;
-      font-weight: 600;
-      padding: 0 2px;
+      width: 44px;
+      height: 34px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 0 4px;
+      color: #7dd3fc;
+      border-color: rgba(56, 189, 248, 0.4);
     }
 
     .zoom-percent {
       font-size: 11px;
-      font-weight: 600;
-      color: #cbd5e1;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid #1e293b;
-      padding: 2px 6px;
-      border-radius: 6px;
-      min-width: 38px;
+      font-weight: 700;
+      color: #e2e8f0;
+      padding: 2px 4px;
+      min-width: 44px;
       text-align: center;
     }
 
@@ -336,10 +347,6 @@
       border: 1px solid #334155;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
       max-width: calc(100% - 20px);
-    }
-
-    #annContextBar {
-      top: 46px;
     }
 
     #layerContextBar {
@@ -426,8 +433,8 @@
     .draw-subbar {
       display: flex;
       flex-direction: column;
-      gap: 7px;
-      padding: 7px 10px;
+      gap: 8px;
+      padding: 9px 10px;
       background: var(--bg-panel-2);
       border-bottom: 1px solid var(--border);
     }
@@ -435,7 +442,7 @@
     .tool-row {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       overflow-x: auto;
       padding-bottom: 2px;
       scrollbar-width: none;
@@ -446,41 +453,100 @@
     .tool-btn {
       flex: 1 0 auto;
       min-width: 56px;
-      padding: 7px 8px;
-      border-radius: 9px;
+      min-height: 40px;
+      padding: 8px 10px;
+      border-radius: 10px;
       background: #1e293b;
       border: 1px solid #334155;
       color: #cbd5e1;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       white-space: nowrap;
     }
 
     .tool-btn.active {
-      background: rgba(56, 189, 248, 0.2);
+      background: rgba(56, 189, 248, 0.22);
       border-color: var(--accent);
       color: #ffffff;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+    }
+
+    .ui-tier-btn {
+      flex: 0 0 auto;
+      min-height: 40px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(250, 204, 21, 0.14);
+      border: 1px solid rgba(250, 204, 21, 0.5);
+      color: #fde047;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .ui-tier-btn.is-pro {
+      background: rgba(168, 85, 247, 0.18);
+      border-color: rgba(192, 132, 252, 0.6);
+      color: #e9d5ff;
+    }
+
+    .tool-sep {
+      width: 1px;
+      height: 24px;
+      background: #334155;
+      flex-shrink: 0;
+      margin: 0 2px;
+    }
+
+    .ann-action-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .ann-act-btn {
+      flex: 0 0 auto;
+      min-height: 40px;
+      padding: 8px 11px;
+      border-radius: 10px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #f1f5f9;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .ann-act-btn:hover:not(:disabled) {
+      background: #2c3c54;
+    }
+
+    .ann-act-btn.danger {
+      background: rgba(239, 68, 68, 0.16);
+      border-color: rgba(239, 68, 68, 0.55);
+      color: #fca5a5;
     }
 
     .style-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
     }
 
     .swatch-group {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
     .swatch {
-      width: 26px;
-      height: 26px;
+      width: 30px;
+      height: 30px;
       border-radius: 999px;
-      border: 2px solid rgba(255, 255, 255, 0.25);
+      border: 2px solid rgba(255, 255, 255, 0.28);
       padding: 0;
       flex-shrink: 0;
     }
@@ -488,25 +554,33 @@
     .swatch.active {
       border-color: #ffffff;
       box-shadow: 0 0 0 2px var(--accent);
-      transform: scale(1.08);
+      transform: scale(1.1);
     }
 
+    /* 2x Enlarged Size Stepper (− / +) */
     .size-stepper {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       flex-shrink: 0;
     }
 
     .step-btn {
-      width: 38px;
-      height: 32px;
-      border-radius: 9px;
-      background: #1e293b;
-      border: 1px solid #475569;
+      width: 72px;
+      height: 52px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #26354d, #1e293b);
+      border: 1.5px solid #64748b;
       color: #f8fafc;
-      font-size: 18px;
+      font-size: 28px;
       font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    }
+
+    .step-btn:hover:not(:disabled) {
+      background: #2d3f5b;
+      border-color: var(--accent);
     }
 
     .mode-tabs {
@@ -662,13 +736,13 @@
     body.is-landscape .draw-subbar {
       grid-column: 3;
       grid-row: 1;
-      width: calc(64px + env(safe-area-inset-right));
-      padding: 6px calc(5px + env(safe-area-inset-right)) 6px 5px;
+      width: calc(96px + env(safe-area-inset-right));
+      padding: 7px calc(6px + env(safe-area-inset-right)) 7px 6px;
       border-left: 1px solid var(--border);
       border-bottom: none;
       overflow-y: auto;
       overflow-x: hidden;
-      gap: 6px;
+      gap: 7px;
       justify-content: flex-start;
     }
     body.is-landscape .draw-subbar::-webkit-scrollbar { display: none; }
@@ -676,44 +750,73 @@
       flex-direction: column;
       overflow: visible;
       padding-bottom: 0;
-      gap: 4px;
+      gap: 5px;
     }
     body.is-landscape .tool-btn {
       flex: none;
       width: 100%;
       min-width: 0;
+      min-height: 36px;
+      padding: 7px 4px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+    body.is-landscape .ui-tier-btn {
+      width: 100%;
+      min-height: 34px;
+      padding: 6px 4px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+    body.is-landscape .tool-sep {
+      width: 100%;
+      height: 1px;
+      margin: 2px 0;
+    }
+    body.is-landscape .ann-action-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      width: 100%;
+      gap: 4px;
+    }
+    body.is-landscape .ann-act-btn {
+      width: 100%;
+      min-height: 34px;
       padding: 6px 2px;
       font-size: 11px;
-      border-radius: 7px;
+      border-radius: 8px;
+    }
+    body.is-landscape #btnAnnEditText {
+      grid-column: 1 / -1;
     }
     body.is-landscape .style-row {
       flex-direction: column;
       align-items: stretch;
-      gap: 6px;
-      padding-top: 6px;
+      gap: 8px;
+      padding-top: 7px;
       border-top: 1px solid #1e293b;
     }
     body.is-landscape .swatch-group {
       display: grid;
-      grid-template-columns: repeat(2, 22px);
+      grid-template-columns: repeat(3, 24px);
       justify-content: center;
-      gap: 5px;
+      gap: 6px;
     }
     body.is-landscape .swatch {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
     }
     body.is-landscape .size-stepper {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 4px;
+      gap: 6px;
       width: 100%;
     }
     body.is-landscape .step-btn {
       width: 100%;
-      height: 30px;
-      font-size: 16px;
-      border-radius: 7px;
+      height: 52px;
+      font-size: 26px;
+      border-radius: 10px;
     }
 
     /* Right Sidebar (Layer Mode when layer selected) */
@@ -751,28 +854,26 @@
       padding: 4px 10px;
       font-size: 11px;
     }
-    body.is-landscape #annContextBar {
-      top: 34px;
-      padding: 4px 6px;
-    }
     body.is-landscape .zoom-controls {
       top: 6px;
       right: 6px;
       gap: 4px;
+      padding: 4px;
     }
     body.is-landscape .zoom-btn {
-      width: 34px;
-      height: 30px;
-      font-size: 16px;
-      border-radius: 8px;
+      width: 40px;
+      height: 36px;
+      font-size: 20px;
+      border-radius: 9px;
     }
     body.is-landscape .zoom-fit-btn {
-      height: 28px;
-      font-size: 10px;
+      height: 30px;
+      font-size: 11px;
     }
     body.is-landscape .zoom-percent {
       font-size: 10px;
       padding: 2px 4px;
+      min-width: 40px;
     }
 
     /* ==================== 6. Full-Screen Collapsed UI Mode ==================== */
@@ -1076,7 +1177,7 @@
           <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <span>匯入 CAD</span>
         </button>
-        <span class="version-badge" title="程式版本">v2.4</span>
+        <span class="version-badge" title="程式版本">v2.6</span>
         <input id="cadFileInput" type="file" accept="image/*" class="hidden" />
         <input id="photoFileInput" type="file" accept="image/*" multiple class="hidden" />
       </div>
@@ -1124,13 +1225,6 @@
         <!-- Mode Indicator Badge -->
         <div id="modeBadge" class="mode-badge">底圖檢視：拖曳平移、滾輪或雙指縮放</div>
 
-        <!-- Annotation Floating Context Bar -->
-        <div id="annContextBar" class="context-bar hidden">
-          <button id="btnAnnEditText" class="ctx-btn hidden">編輯文字</button>
-          <button id="btnAnnDuplicate" class="ctx-btn">複製</button>
-          <button id="btnAnnDelete" class="ctx-btn danger">刪除</button>
-        </div>
-
         <!-- Zoom Controls -->
         <div class="zoom-controls">
           <button id="btnZoomIn" class="zoom-btn" title="放大">+</button>
@@ -1159,14 +1253,26 @@
         <!-- Draw Mode Sub-toolbar -->
         <div id="drawSubbar" class="draw-subbar hidden">
           <div class="tool-row" id="toolRow">
-            <button class="tool-btn active" data-tool="select">選取編輯</button>
-            <button class="tool-btn" data-tool="arrow">箭頭</button>
-            <button class="tool-btn" data-tool="line">直線</button>
-            <button class="tool-btn" data-tool="rect">矩形</button>
-            <button class="tool-btn" data-tool="ellipse">圓形</button>
-            <button class="tool-btn" data-tool="cloud">雲朵</button>
-            <button class="tool-btn" data-tool="freehand">手繪</button>
+            <button id="btnDrawUiTier" class="ui-tier-btn" type="button" title="點擊切換精緻版／專業版工具列">
+              <span class="lbl-full">精緻版 ▾</span>
+              <span class="lbl-short">精緻</span>
+            </button>
+            <span class="tool-sep"></span>
+            <button class="tool-btn active" data-tool="arrow">箭頭</button>
             <button class="tool-btn" data-tool="text">文字</button>
+            <button class="tool-btn" data-tool="cloud">雲朵</button>
+            <button class="tool-btn" data-tool="line">直線</button>
+            <button class="tool-btn pro-only hidden" data-tool="rect">矩形</button>
+            <button class="tool-btn pro-only hidden" data-tool="ellipse">圓形</button>
+            <span class="tool-sep"></span>
+            <div class="ann-action-group" id="annActionGroup">
+              <button id="btnAnnEditText" class="ann-act-btn hidden" type="button" title="編輯選取的文字註解">
+                <span class="lbl-full">編輯文字</span>
+                <span class="lbl-short">改字</span>
+              </button>
+              <button id="btnAnnDuplicate" class="ann-act-btn" type="button" title="複製選取的標註物件" disabled>複製</button>
+              <button id="btnAnnDelete" class="ann-act-btn danger" type="button" title="刪除選取的標註物件" disabled>刪除</button>
+            </div>
           </div>
           <div class="style-row">
             <div class="swatch-group" id="swatchGroup">
@@ -1311,9 +1417,10 @@
       'use strict';
 
       /* ==================== A. Constants & Default Phrases ==================== */
-      const APP_VERSION = 'v2.4';
+      const APP_VERSION = 'v2.6';
       const STORAGE_PHRASES_KEY = 'cad_overlay_phrases_v2';
       const STORAGE_PHRASE_VIEW_KEY = 'cad_overlay_phrase_view_v2';
+      const STORAGE_DRAW_UI_TIER_KEY = 'cad_overlay_draw_ui_tier_v2';
 
       const DEFAULT_PHRASES = [
         { id: 'p1', text: '1F', category: '樓層' },
@@ -1365,11 +1472,12 @@
         floatingToast: document.getElementById('floatingToast'),
         drawSubbar: document.getElementById('drawSubbar'),
         toolRow: document.getElementById('toolRow'),
+        btnDrawUiTier: document.getElementById('btnDrawUiTier'),
         swatchGroup: document.getElementById('swatchGroup'),
         btnSizeMinus: document.getElementById('btnSizeMinus'),
         btnSizePlus: document.getElementById('btnSizePlus'),
         modeTabs: document.getElementById('modeTabs'),
-        annContextBar: document.getElementById('annContextBar'),
+        annActionGroup: document.getElementById('annActionGroup'),
         btnAnnEditText: document.getElementById('btnAnnEditText'),
         btnAnnDuplicate: document.getElementById('btnAnnDuplicate'),
         btnAnnDelete: document.getElementById('btnAnnDelete'),
@@ -1444,7 +1552,8 @@
         selectedAnnId: null,
         lastCreatedAnnId: null,
         draw: {
-          tool: 'select', // 'select'|'arrow'|'line'|'rect'|'ellipse'|'cloud'|'freehand'|'text'
+          uiTier: 'lite', // 'lite' (精緻版: 箭頭、文字、雲朵、直線) | 'pro' (專業版: +矩形、圓形)
+          tool: 'arrow', // 'arrow'|'text'|'cloud'|'line'|'rect'|'ellipse'|null (null = 純選取狀態)
           color: '#ef4444',
           sizes: {
             arrow: 12,
@@ -1452,7 +1561,6 @@
             rect: 12,
             ellipse: 12,
             cloud: 12,
-            freehand: 12,
             text: 40
           }
         },
@@ -1877,15 +1985,6 @@
           g.beginPath();
           g.ellipse(0, 0, Math.max(1, ann.w / 2), Math.max(1, ann.h / 2), 0, 0, Math.PI * 2);
           g.stroke();
-        } else if (ann.type === 'freehand') {
-          if (ann.points && ann.points.length > 0) {
-            g.beginPath();
-            g.moveTo(ann.points[0].x, ann.points[0].y);
-            for (let i = 1; i < ann.points.length; i++) {
-              g.lineTo(ann.points[i].x, ann.points[i].y);
-            }
-            g.stroke();
-          }
         } else if (ann.type === 'text') {
           const box = measureTextBox(g, ann);
           g.fillStyle = 'rgba(15, 23, 42, 0.72)';
@@ -1991,16 +2090,6 @@
         } else if (ann.type === 'text') {
           const box = measureTextBox(g, ann);
           g.strokeRect(ann.x - 3 * invS, ann.y - 3 * invS, box.w + 6 * invS, box.h + 6 * invS);
-        } else if (ann.type === 'freehand' && ann.points && ann.points.length) {
-          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-          ann.points.forEach(p => {
-            if (p.x < minX) minX = p.x;
-            if (p.y < minY) minY = p.y;
-            if (p.x > maxX) maxX = p.x;
-            if (p.y > maxY) maxY = p.y;
-          });
-          const pad = ann.size + 6 * invS;
-          g.strokeRect(minX - pad, minY - pad, (maxX - minX) + pad * 2, (maxY - minY) + pad * 2);
         }
         g.restore();
       }
@@ -2061,7 +2150,7 @@
           }
         }
 
-        if (state.mode === 'draw' && state.draw.tool === 'select' && state.selectedAnnId) {
+        if (state.mode === 'draw' && state.selectedAnnId) {
           const selAnn = state.annotations.find(a => a.id === state.selectedAnnId);
           if (selAnn) {
             drawAnnotationSelection(ctx, selAnn);
@@ -2151,12 +2240,6 @@
               ? (lx * lx) / (innerRx ** 2) + (ly * ly) / (innerRy ** 2)
               : 2;
             if (outerNorm <= 1 && innerNorm >= 1) return ann;
-          } else if (ann.type === 'freehand' && ann.points && ann.points.length) {
-            for (let j = 1; j < ann.points.length; j++) {
-              if (distToSegment(wx, wy, ann.points[j - 1].x, ann.points[j - 1].y, ann.points[j].x, ann.points[j].y) <= tol + ann.size / 2) {
-                return ann;
-              }
-            }
           } else if (ann.type === 'text') {
             const box = measureTextBox(ctx, ann);
             if (wx >= ann.x - 8 && wx <= ann.x + box.w + 8 && wy >= ann.y - 8 && wy <= ann.y + box.h + 8) {
@@ -2290,92 +2373,101 @@
           return;
         }
 
-        // 3. DRAW MODE
+        // 3. DRAW MODE: Direct click-to-edit on any existing annotation/handle, otherwise draw with active tool
         if (state.mode === 'draw') {
+          const selAnn = state.annotations.find(a => a.id === state.selectedAnnId);
+          if (selAnn) {
+            // Check endpoints for line/arrow
+            if (selAnn.type === 'line' || selAnn.type === 'arrow') {
+              const hitR = 20 / state.viewport.scale;
+              if (Math.hypot(world.x - selAnn.x1, world.y - selAnn.y1) <= hitR) {
+                dragOp = { type: 'ann-endpoint', ann: selAnn, end: 1, changed: false };
+                return;
+              }
+              if (Math.hypot(world.x - selAnn.x2, world.y - selAnn.y2) <= hitR) {
+                dragOp = { type: 'ann-endpoint', ann: selAnn, end: 2, changed: false };
+                return;
+              }
+            }
+
+            // Check rotated gizmo handles for rect/ellipse/cloud
+            if (selAnn.type === 'rect' || selAnn.type === 'ellipse' || selAnn.type === 'cloud') {
+              const handle = getGizmoHandleHit(world.x, world.y, selAnn.cx, selAnn.cy, selAnn.w, selAnn.h, selAnn.rotation);
+              if (handle === 'rot') {
+                dragOp = {
+                  type: 'ann-rot',
+                  ann: selAnn,
+                  startAngle: Math.atan2(world.y - selAnn.cy, world.x - selAnn.cx),
+                  origRot: selAnn.rotation || 0,
+                  changed: false
+                };
+                return;
+              }
+              if (handle === 'nw' || handle === 'ne' || handle === 'se' || handle === 'sw') {
+                dragOp = {
+                  type: 'ann-resize',
+                  ann: selAnn,
+                  corner: handle,
+                  fixedWorld: computeOppositeCornerWorld(selAnn.cx, selAnn.cy, selAnn.w, selAnn.h, selAnn.rotation, handle),
+                  changed: false
+                };
+                return;
+              }
+            }
+          }
+
+          // Hit-test existing annotation first so clicking any drawn object selects & edits it directly
+          const hit = hitTestAnnotation(world.x, world.y);
+          if (hit) {
+            state.selectedAnnId = hit.id;
+            updateContextBars();
+            renderMainCanvas();
+
+            // Double tap to edit text
+            const now = Date.now();
+            if (hit.type === 'text' && lastTapInfo.annId === hit.id && now - lastTapInfo.time < 360) {
+              lastTapInfo = { time: 0, annId: null };
+              openTextModal({ mode: 'edit', ann: hit });
+              return;
+            }
+            lastTapInfo = { time: now, annId: hit.id };
+
+            dragOp = {
+              type: 'ann-move',
+              ann: hit,
+              startWorld: world,
+              origSnapshot: JSON.parse(JSON.stringify(hit)),
+              changed: false
+            };
+            return;
+          }
+
+          // Clicked on empty space: clear current selection
+          if (state.selectedAnnId) {
+            state.selectedAnnId = null;
+            updateContextBars();
+            renderMainCanvas();
+          }
+
           const tool = state.draw.tool;
+          // If no drawing tool is active (deselected tool button), pan the canvas
+          if (!tool) {
+            dragOp = {
+              type: 'pan',
+              startX: pt.x,
+              startY: pt.y,
+              origOffX: state.viewport.offsetX,
+              origOffY: state.viewport.offsetY
+            };
+            return;
+          }
 
           if (tool === 'text') {
             openTextModal({ mode: 'create', worldX: world.x, worldY: world.y });
             return;
           }
 
-          if (tool === 'select') {
-            const selAnn = state.annotations.find(a => a.id === state.selectedAnnId);
-            if (selAnn) {
-              // Check endpoints for line/arrow
-              if (selAnn.type === 'line' || selAnn.type === 'arrow') {
-                const hitR = 20 / state.viewport.scale;
-                if (Math.hypot(world.x - selAnn.x1, world.y - selAnn.y1) <= hitR) {
-                  dragOp = { type: 'ann-endpoint', ann: selAnn, end: 1, changed: false };
-                  return;
-                }
-                if (Math.hypot(world.x - selAnn.x2, world.y - selAnn.y2) <= hitR) {
-                  dragOp = { type: 'ann-endpoint', ann: selAnn, end: 2, changed: false };
-                  return;
-                }
-              }
-
-              // Check rotated gizmo for rect/ellipse/cloud
-              if (selAnn.type === 'rect' || selAnn.type === 'ellipse' || selAnn.type === 'cloud') {
-                const handle = getGizmoHandleHit(world.x, world.y, selAnn.cx, selAnn.cy, selAnn.w, selAnn.h, selAnn.rotation);
-                if (handle === 'rot') {
-                  dragOp = {
-                    type: 'ann-rot',
-                    ann: selAnn,
-                    startAngle: Math.atan2(world.y - selAnn.cy, world.x - selAnn.cx),
-                    origRot: selAnn.rotation || 0,
-                    changed: false
-                  };
-                  return;
-                }
-                if (handle === 'nw' || handle === 'ne' || handle === 'se' || handle === 'sw') {
-                  dragOp = {
-                    type: 'ann-resize',
-                    ann: selAnn,
-                    corner: handle,
-                    fixedWorld: computeOppositeCornerWorld(selAnn.cx, selAnn.cy, selAnn.w, selAnn.h, selAnn.rotation, handle),
-                    changed: false
-                  };
-                  return;
-                }
-              }
-            }
-
-            const hit = hitTestAnnotation(world.x, world.y);
-            state.selectedAnnId = hit ? hit.id : null;
-            updateContextBars();
-            renderMainCanvas();
-
-            if (hit) {
-              // Double tap to edit text
-              const now = Date.now();
-              if (hit.type === 'text' && lastTapInfo.annId === hit.id && now - lastTapInfo.time < 360) {
-                lastTapInfo = { time: 0, annId: null };
-                openTextModal({ mode: 'edit', ann: hit });
-                return;
-              }
-              lastTapInfo = { time: now, annId: hit.id };
-
-              dragOp = {
-                type: 'ann-move',
-                ann: hit,
-                startWorld: world,
-                origSnapshot: JSON.parse(JSON.stringify(hit)),
-                changed: false
-              };
-            } else {
-              dragOp = {
-                type: 'pan',
-                startX: pt.x,
-                startY: pt.y,
-                origOffX: state.viewport.offsetX,
-                origOffY: state.viewport.offsetY
-              };
-            }
-            return;
-          }
-
-          // Drawing new vector shape (arrow, line, rect, ellipse, cloud, freehand)
+          // Drawing new vector shape (arrow, line, rect, ellipse, cloud)
           const size = state.draw.sizes[tool] || 12;
           if (tool === 'line' || tool === 'arrow') {
             activeDraftAnn = {
@@ -2397,14 +2489,6 @@
               w: 2,
               h: 2,
               rotation: 0,
-              color: state.draw.color,
-              size
-            };
-          } else if (tool === 'freehand') {
-            activeDraftAnn = {
-              id: genId('ann'),
-              type: 'freehand',
-              points: [{ x: world.x, y: world.y }],
               color: state.draw.color,
               size
             };
@@ -2497,8 +2581,6 @@
             ann.cx = orig.cx + dx; ann.cy = orig.cy + dy;
           } else if (ann.type === 'text') {
             ann.x = orig.x + dx; ann.y = orig.y + dy;
-          } else if (ann.type === 'freehand') {
-            ann.points = orig.points.map(p => ({ x: p.x + dx, y: p.y + dy }));
           }
           dragOp.changed = true;
           renderMainCanvas();
@@ -2555,12 +2637,6 @@
             activeDraftAnn.cy = (y1 + world.y) / 2;
             activeDraftAnn.w = Math.max(4, Math.abs(world.x - x1));
             activeDraftAnn.h = Math.max(4, Math.abs(world.y - y1));
-          } else if (activeDraftAnn.type === 'freehand') {
-            const pts = activeDraftAnn.points;
-            const last = pts[pts.length - 1];
-            if (Math.hypot(world.x - last.x, world.y - last.y) > 2) {
-              pts.push({ x: world.x, y: world.y });
-            }
           }
           renderMainCanvas();
         }
@@ -2583,13 +2659,13 @@
               valid = Math.hypot(activeDraftAnn.x2 - activeDraftAnn.x1, activeDraftAnn.y2 - activeDraftAnn.y1) > 4;
             } else if (activeDraftAnn.type === 'rect' || activeDraftAnn.type === 'ellipse' || activeDraftAnn.type === 'cloud') {
               valid = activeDraftAnn.w > 6 && activeDraftAnn.h > 6;
-            } else if (activeDraftAnn.type === 'freehand') {
-              valid = activeDraftAnn.points.length > 1;
             }
             if (valid) {
               state.annotations.push(activeDraftAnn);
               state.lastCreatedAnnId = activeDraftAnn.id;
+              state.selectedAnnId = activeDraftAnn.id;
               pushHistory();
+              updateContextBars();
             }
             activeDraftAnn = null;
             renderMainCanvas();
@@ -2634,14 +2710,12 @@
 
       function updateModeBadge() {
         const toolNames = {
-          select: '選取編輯（可拖曳／縮放／旋轉）',
-          arrow: '繪製箭頭',
-          line: '繪製直線',
-          rect: '繪製矩形',
-          ellipse: '繪製圓形',
-          cloud: '繪製雲朵框',
-          freehand: '手繪標記',
-          text: '點擊畫布新增文字'
+          arrow: '繪製箭頭（點選既有標註可直接編輯）',
+          text: '點擊畫布新增文字（點選既有標註可直接編輯）',
+          cloud: '繪製雲朵框（點選既有標註可直接編輯）',
+          line: '繪製直線（點選既有標註可直接編輯）',
+          rect: '繪製矩形（點選既有標註可直接編輯）',
+          ellipse: '繪製圓形（點選既有標註可直接編輯）'
         };
         if (state.mode === 'view') {
           el.modeBadge.textContent = '底圖檢視：拖曳平移、滾輪或雙指縮放';
@@ -2650,7 +2724,11 @@
             ? '圖層編輯：拖曳移動、拉角縮放、頂端旋轉'
             : '圖層編輯：點選照片圖層進行調整';
         } else if (state.mode === 'draw') {
-          el.modeBadge.textContent = `標註繪圖：${toolNames[state.draw.tool] || ''}`;
+          const tierLabel = state.draw.uiTier === 'pro' ? '專業版' : '精緻版';
+          const toolDesc = state.draw.tool
+            ? toolNames[state.draw.tool]
+            : '點選標註物件編輯（拖曳／縮放／旋轉）';
+          el.modeBadge.textContent = `標註繪圖（${tierLabel}）：${toolDesc}`;
         }
       }
 
@@ -2659,16 +2737,53 @@
         const showLayerBar = state.mode === 'layer' && Boolean(state.selectedLayerId);
         el.layerContextBar.classList.toggle('hidden', !showLayerBar);
 
-        // Annotation context bar
-        const selAnn = (state.mode === 'draw' && state.draw.tool === 'select')
+        // Annotation action buttons inside Draw UI toolbar
+        const selAnn = state.mode === 'draw'
           ? state.annotations.find(a => a.id === state.selectedAnnId)
           : null;
-        el.annContextBar.classList.toggle('hidden', !selAnn);
+        el.btnAnnDuplicate.disabled = !selAnn;
+        el.btnAnnDelete.disabled = !selAnn;
         el.btnAnnEditText.classList.toggle('hidden', !(selAnn && selAnn.type === 'text'));
 
         updateModeBadge();
         requestAnimationFrame(() => resizeMainCanvas());
       }
+
+      function applyDrawUiTier(tier) {
+        state.draw.uiTier = tier === 'pro' ? 'pro' : 'lite';
+        const isPro = state.draw.uiTier === 'pro';
+        el.btnDrawUiTier.classList.toggle('is-pro', isPro);
+        el.btnDrawUiTier.innerHTML = isPro
+          ? '<span class="lbl-full">專業版 ▾</span><span class="lbl-short">專業</span>'
+          : '<span class="lbl-full">精緻版 ▾</span><span class="lbl-short">精緻</span>';
+
+        el.toolRow.querySelectorAll('.pro-only').forEach(btn => {
+          btn.classList.toggle('hidden', !isPro);
+        });
+
+        // If switching to lite while rect/ellipse was selected, fall back to arrow
+        if (!isPro && (state.draw.tool === 'rect' || state.draw.tool === 'ellipse')) {
+          state.draw.tool = 'arrow';
+        }
+
+        el.toolRow.querySelectorAll('.tool-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.tool === state.draw.tool);
+        });
+
+        try {
+          localStorage.setItem(STORAGE_DRAW_UI_TIER_KEY, state.draw.uiTier);
+        } catch (err) {
+          // Ignore storage errors
+        }
+        updateModeBadge();
+        requestAnimationFrame(() => resizeMainCanvas());
+      }
+
+      el.btnDrawUiTier.addEventListener('click', () => {
+        const nextTier = state.draw.uiTier === 'pro' ? 'lite' : 'pro';
+        applyDrawUiTier(nextTier);
+        showToast(nextTier === 'pro' ? '已切換為：專業版工具列' : '已切換為：精緻版工具列', 1000);
+      });
 
       el.modeTabs.addEventListener('click', (e) => {
         const btn = e.target.closest('.mode-tab');
@@ -2679,11 +2794,12 @@
       el.toolRow.addEventListener('click', (e) => {
         const btn = e.target.closest('.tool-btn');
         if (!btn) return;
-        state.draw.tool = btn.dataset.tool;
-        el.toolRow.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b === btn));
-        if (state.draw.tool !== 'select') {
-          state.selectedAnnId = null;
-        }
+        const clickedTool = btn.dataset.tool;
+        // Clicking active tool again deselects it into pure selection/edit state
+        state.draw.tool = state.draw.tool === clickedTool ? null : clickedTool;
+        el.toolRow.querySelectorAll('.tool-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.tool === state.draw.tool);
+        });
         updateContextBars();
         renderMainCanvas();
       });
@@ -2716,8 +2832,8 @@
       function adjustSize(delta) {
         const targetAnn = getTargetAnnForStyle();
         let activeType = state.draw.tool;
-        if (activeType === 'select') {
-          activeType = targetAnn ? targetAnn.type : 'arrow';
+        if (!activeType || (state.selectedAnnId && targetAnn)) {
+          activeType = targetAnn ? targetAnn.type : (state.draw.tool || 'arrow');
         }
 
         const isText = activeType === 'text';
@@ -2794,8 +2910,6 @@
           clone.cx += shift; clone.cy += shift;
         } else if (clone.type === 'text') {
           clone.x += shift; clone.y += shift;
-        } else if (clone.type === 'freehand') {
-          clone.points.forEach(p => { p.x += shift; p.y += shift; });
         }
         state.annotations.push(clone);
         state.selectedAnnId = clone.id;
@@ -3411,9 +3525,11 @@
           };
           state.annotations.push(ann);
           state.lastCreatedAnnId = ann.id;
+          state.selectedAnnId = ann.id;
         }
         pushHistory();
         closeTextModal();
+        updateContextBars();
         renderMainCanvas();
       });
 
@@ -3686,6 +3802,12 @@
         }
         initialized = true;
         loadPhrases();
+        try {
+          const savedTier = localStorage.getItem(STORAGE_DRAW_UI_TIER_KEY);
+          applyDrawUiTier(savedTier === 'pro' ? 'pro' : 'lite');
+        } catch (err) {
+          applyDrawUiTier('lite');
+        }
         pushHistory();
         syncOrientationLayout();
         fitCadToScreen();
